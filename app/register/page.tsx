@@ -2,7 +2,7 @@
 
 // pages/register.tsx
 import React, { useState } from 'react';
-import { registerUser } from "../lib/firestore";
+import {signInWithGoogle} from "../lib/firestore"
 // Types
 interface RegisterFormData {
   email: string;
@@ -78,23 +78,31 @@ const RegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      setIsSubmitting(true);
+    if (!validateForm()) return;
+
+  setIsSubmitting(true);
       
       
-      await registerUser(formData.email, formData.phone, formData.password);
-      
-      // TODO: Implement actual registration logic
-      console.log('Register submitted:', formData);
-      
-      setIsSubmitting(false);
+      try {
+    const res = await fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    });
+    const data = await res.json();
+
+    if (data.success) {
       setShowSuccessModal(true);
-      
-      // Redirect after 2 seconds
-      setTimeout(() => {
-        window.location.href = '/login';
-      }, 2000);
+      setTimeout(() => window.location.href = '/login', 2000);
+    } else {
+      alert(data.error);
     }
+  } catch (error) {
+    console.error(error);
+    alert('Registration failed');
+  } finally {
+    setIsSubmitting(false);
+  }
   };
 
   const handleInputChange = (field: keyof RegisterFormData, value: string | boolean) => {
@@ -372,7 +380,7 @@ const RegisterPage: React.FC = () => {
                 </svg>
                 ดำเนินการต่อด้วย Facebook
               </button>
-              <button
+              <button onClick={signInWithGoogle}
                 type="button"
                 className="w-full py-3 px-4 bg-white hover:bg-gray-100 text-gray-900 font-medium rounded-xl transition-all flex items-center justify-center gap-2"
               >

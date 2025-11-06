@@ -1,11 +1,7 @@
 "use client";
 // pages/index.tsx
-import React, { useState } from 'react';
-import Link from "next/link";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth, db } from "./lib/firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
-
+import React, { useState, useEffect } from 'react';
+import {Navbar} from "./components/navbar/navbar";
 
 // Types
 interface Game {
@@ -111,13 +107,13 @@ const PAYMENT_METHODS = [
   { name: 'Rabbit LINE Pay', icon: '🐰' },
 ];
 
+
+
 const HomePage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('ทั้งหมด');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentSlide, setCurrentSlide] = useState<number>(0);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false); // Simulated login state
-  const [showUserMenu, setShowUserMenu] = useState<boolean>(false);
-  const [user, setUser] = useState({ name: 'ผู้ใช้งาน', email: 'user@example.com', balance: 1250 });
+
 
   const filteredGames = GAMES.filter((game) => {
     const matchesCategory =
@@ -130,93 +126,11 @@ const HomePage: React.FC = () => {
     return matchesCategory && matchesSearch;
   });
 
-  // Simulate login for testing (remove in production)
-  React.useEffect(() => {
-    // Check if user is logged in from localStorage or session
-    const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    setIsLoggedIn(loggedIn);
-  }, []);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-              {/* Top Bar */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-4">
-              <span>📞 บริการ 24/7</span>
-              <span>⚡ เติมเร็ว ภายใน 5 นาที</span>
-              {isLoggedIn && (
-                <span className="hidden md:inline">👋 สวัสดี, {user.name}</span>
-              )}
-            </div>
-            <div className="flex items-center gap-3">
-              <a href="#" className="hover:underline">Facebook</a>
-              <span>|</span>
-              <a href="#" className="hover:underline">Line</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Header */}
-      <header className="bg-gray-900/80 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-20">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-2xl">
-                🎮
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white">P2W TOPUP</h1>
-                <p className="text-xs text-gray-400">เติมเกมออนไลน์ ง่าย รวดเร็ว</p>
-              </div>
-            </div>
-
-            {/* Search */}
-            <div className="hidden md:block flex-1 max-w-xl mx-8">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="ค้นหาเกมที่ต้องการเติม..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-6 py-3 pl-12 rounded-full bg-gray-800 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50"
-                />
-                <svg
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-            </div>
-
-            {/* User Menu */}
-            <div className="flex items-center gap-3">
-               <Link href="/login">
-              <button className="cursor-pointer flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg font-bold transition-all transform hover:scale-105 shadow-lg">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-                <span>เข้าสู่ระบบ</span>
-              </button>
-              </Link>
-               <Link href="/register">
-              <button className="cursor-pointer flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-lg font-bold transition-all transform hover:scale-105 shadow-lg">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <span>สมัครสมาชิก</span>
-              </button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      
+    <Navbar onSearchChange={setSearchQuery}/>
+      
 
       <main className="container mx-auto px-4 py-8">
         {/* Mobile Search */}
